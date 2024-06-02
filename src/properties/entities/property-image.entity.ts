@@ -1,20 +1,20 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Property } from './';
+
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Property } from './property.entity';
 
 @Entity()
 export class PropertyImage {
-
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column('text')
-    url: string;
+    @Column()
+    filename: string;
 
-    @ManyToOne(
-        () => Property,
-        (property) => property.images,
-        { onDelete: 'CASCADE' }
-    )
-    property: Property
+    @Column({ nullable: true })
+    title: string;
 
+
+    @ManyToOne(() => Property, (property) => property.images, { onDelete: 'CASCADE' })
+    property: Property;
 }
+

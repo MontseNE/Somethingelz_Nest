@@ -4,11 +4,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PropertiesModule } from './properties/properties.module';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { PropertiesController } from './properties/properties.controller';
+import { PropertiesService } from './properties/properties.service';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
 
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // Ruta absoluta al directorio de imágenes
+      serveRoot: '/uploads', // Ruta relativa a la URL base donde se servirán los archivos
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -20,12 +30,15 @@ import { AuthModule } from './auth/auth.module';
       synchronize: true,
     }),
 
-    PropertiesModule,
-
     CommonModule,
 
     AuthModule,
 
+    PropertiesModule,
+
   ],
+  controllers: [],
+  providers: [],
+
 })
 export class AppModule { }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { LoginUserDto, CreateUserDto } from './dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 
 @Injectable()
@@ -47,6 +48,34 @@ export class AuthService {
 
   }
 
+  async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (updateUserDto.password) {
+        updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10);
+      }
+
+      if (updateUserDto.favList) {
+        user.favList = updateUserDto.favList;
+      }
+
+      await this.userRepository.save(user);
+      const updatedUser = await this.userRepository.findOne({ where: { id } });
+
+      return {
+        ...updatedUser,
+        token: this.getJwtToken({ id: updatedUser.id }),
+      };
+    } catch (error) {
+      console.log(error);
+      this.handleDBErrors(error);
+    }
+  }
 
 
   findAll() {
@@ -107,7 +136,6 @@ export class AuthService {
     if (error.code === '23505')
       throw new BadRequestException(error.detail);
 
-    //console.log(error);
 
     throw new InternalServerErrorException('Please check server logs')
   }

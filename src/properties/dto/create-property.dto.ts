@@ -1,9 +1,14 @@
-import { IsArray, IsBoolean, IsIn, IsNumber, IsOptional, IsPositive, IsString, MinLength } from "class-validator";
+import { IsString, IsIn, IsNumber, IsPositive, IsBoolean, IsArray, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { PropertyImage } from '../entities';
 
 export class CreatePropertyDto {
     @IsString()
-    @IsIn(['sale', 'rent'])
+    @IsIn(['venta', 'alquiler', 'sale', 'rent'])
     operation: string;
+
+    @IsString()
+    tipology: string;
 
     @IsString()
     title: string;
@@ -18,27 +23,45 @@ export class CreatePropertyDto {
     municipality: string;
 
     @IsString()
-    adress: string;
+    address: string;
 
     @IsNumber()
     @IsPositive()
+    @Type(() => Number)
     precio: number;
 
     @IsNumber()
+    @Type(() => Number)
     n_rooms: number;
 
     @IsNumber()
+    @Type(() => Number)
     n_bathrooms: number;
 
     @IsNumber()
     @IsPositive()
+    @Type(() => Number)
     size: number;
 
     @IsBoolean()
+    @Type(() => Boolean)
     garage: boolean;
 
-    @IsString({ each: true })
     @IsArray()
     @IsOptional()
-    images?: string[];
+    images?: PropertyImage[];
+
+    @IsArray()
+    @IsOptional()
+    titles?: string[];
+
+    @IsArray()
+    @IsOptional()
+    filenames?: string[];
+
+    @IsArray()
+    @IsOptional()
+    imagePaths?: string[];
 }
+
+

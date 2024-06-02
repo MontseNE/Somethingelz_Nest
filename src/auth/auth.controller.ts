@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Headers, SetMetadata } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Headers, ParseUUIDPipe, Param, Patch, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { IncomingHttpHeaders } from 'http';
 
@@ -10,17 +10,33 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { UserRoleGuard } from './guards/user-role.guard';
 import { ValidRoles } from './interfaces';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
 
-
   @Post('register')
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.authService.create(createUserDto);
   }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard('jwt')) // Asegura que solo los usuarios autenticados puedan actualizar sus datos
+  updateUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @GetUser() user: User
+  ) {
+    // Asegúrate de que el usuario está actualizando su propio perfil
+    if (user.id !== id) {
+      throw new UnauthorizedException('You are not authorized to update this user');
+    }
+    return this.authService.updateUser(id, updateUserDto);
+  }
+
+
 
   @Post('login')
   loginUser(@Body() loginUserDto: LoginUserDto) {
